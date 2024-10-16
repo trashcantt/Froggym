@@ -52,6 +52,8 @@ android {
 
 dependencies {
 
+    implementation (libs.gson)
+
     implementation(libs.coil.compose)
 
     implementation(libs.androidx.room.runtime)

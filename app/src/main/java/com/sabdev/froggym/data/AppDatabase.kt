@@ -3,13 +3,16 @@ package com.sabdev.froggym.data
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
-import androidx.room.RoomDatabase
-import com.sabdev.froggym.data.dao.UserDao
-import com.sabdev.froggym.data.entities.User
+import androidx.room.*
+import com.sabdev.froggym.data.dao.*
+import com.sabdev.froggym.data.entities.*
 
-@Database(entities = [User::class], version = 1)
+@Database(entities = [User::class, Routine::class, Exercise::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun routineDao(): RoutineDao
+    abstract fun exerciseDao(): ExerciseDao
 
     companion object {
         @Volatile

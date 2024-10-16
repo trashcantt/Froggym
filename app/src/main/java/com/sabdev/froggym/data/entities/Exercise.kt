@@ -12,5 +12,5 @@ data class Exercise(
 )
 
 enum class ExerciseType {
-    CALISTHENICS, GYM
+    GYM, CALISTHENICS
 }

@@ -6,41 +6,47 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import com.sabdev.froggym.data.AppDatabase
-import com.sabdev.froggym.data.entities.*
+import com.sabdev.froggym.data.entities.User
+import com.sabdev.froggym.data.repository.*
 import com.sabdev.froggym.ui.screens.*
 import com.sabdev.froggym.ui.theme.FroggymTheme
-import com.sabdev.froggym.viewmodel.AuthViewModel
-import com.sabdev.froggym.viewmodel.AuthViewModelFactory
+import com.sabdev.froggym.viewmodel.*
 
 class MainActivity : ComponentActivity() {
+    private lateinit var routineViewModel: RoutineViewModel
     private lateinit var authViewModel: AuthViewModel
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val userDao = AppDatabase.getInstance(applicationContext).userDao()
+        val database = AppDatabase.getInstance(applicationContext)
+        val routineDao = database.routineDao()
+        val exerciseDao = database.exerciseDao()
+        val userDao = database.userDao()
+
+        val routineRepository = RoutineRepository(routineDao)
+        val exerciseRepository = ExerciseRepository(exerciseDao)
+        val routineViewModelFactory = RoutineViewModelFactory(routineRepository, exerciseRepository)
+        routineViewModel = viewModels<RoutineViewModel> { routineViewModelFactory }.value
+
+        // Initialize authViewModel
         val authViewModelFactory = AuthViewModelFactory(userDao, application)
         authViewModel = viewModels<AuthViewModel> { authViewModelFactory }.value
 
         setContent {
             FroggymTheme {
-                MainScreen(authViewModel)
+                MainScreen(authViewModel, routineViewModel)
             }
         }
     }
@@ -53,7 +59,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(authViewModel: AuthViewModel) {
+fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel) {
     val navController = rememberNavController()
     var isRegistered by remember { mutableStateOf(false) }
 
@@ -78,7 +84,6 @@ fun MainScreen(authViewModel: AuthViewModel) {
         }
     } else {
         val currentUser by authViewModel.currentUser.collectAsState()
-
         Scaffold(
             bottomBar = {
                 NavigationBar {
@@ -113,7 +118,14 @@ fun MainScreen(authViewModel: AuthViewModel) {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Home.route) { HomeScreen() }
-                composable(Screen.Routines.route) { RoutineScreen() }
+                composable(Screen.Routines.route) {
+                    RoutinesScreen(
+                        viewModel = routineViewModel,
+                        onCreateRoutine = {
+                            navController.navigate(Screen.CreateRoutine.route)
+                        }
+                    )
+                }
                 composable(Screen.Profile.route) {
                     ProfileScreen(
                         user = currentUser,
@@ -123,7 +135,7 @@ fun MainScreen(authViewModel: AuthViewModel) {
                     )
                 }
                 composable(Screen.EditProfile.route) {
-                    val currentUser = currentUser ?: User("", "", 0f, 0f, "") // Proporciona un User con valores por defecto si currentUser es null
+                    val currentUser = currentUser ?: User("", "", 0f, 0f, "")
                     EditProfileScreen(
                         user = currentUser,
                         onSaveChanges = { updatedUser ->
@@ -135,19 +147,23 @@ fun MainScreen(authViewModel: AuthViewModel) {
                         }
                     )
                 }
+                composable(Screen.CreateRoutine.route) {
+                    CreateRoutineScreen(
+                        viewModel = routineViewModel,
+                        onRoutineCreated = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
             }
         }
     }
-}
-
-@Composable
-fun SplashScreen(navController: NavController, authViewModel: AuthViewModel) {
-    // Implementa tu pantalla de splash aquí
 }
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Home : Screen("home", "Home", Icons.Filled.Home)
     object Routines : Screen("routines", "Routines", Icons.Filled.List)
     object Profile : Screen("profile", "Profile", Icons.Filled.Person)
-    object EditProfile : Screen("edit_profile", "Edit Profile", Icons.Filled.Person)
+    object EditProfile : Screen("edit_profile", "Edit Profile", Icons.Filled.Edit)
+    object CreateRoutine : Screen("create_routine", "Create Routine", Icons.Filled.Add)
 }
