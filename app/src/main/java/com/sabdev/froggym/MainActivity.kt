@@ -113,7 +113,7 @@ fun MainScreen(authViewModel: AuthViewModel) {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Home.route) { HomeScreen() }
-                composable(Screen.Routines.route) { RoutinesScreen() }
+                composable(Screen.Routines.route) { RoutineScreen() }
                 composable(Screen.Profile.route) {
                     ProfileScreen(
                         user = currentUser,
