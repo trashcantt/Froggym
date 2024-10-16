@@ -11,6 +11,10 @@ class RoutineRepository(private val routineDao: RoutineDao) {
         return routineDao.getRoutinesByType(type)
     }
 
+    fun getRoutineById(id: Int): Flow<Routine?> {
+        return routineDao.getRoutineById(id)
+    }
+
     suspend fun insertRoutine(routine: Routine) {
         routineDao.insertRoutine(routine)
     }

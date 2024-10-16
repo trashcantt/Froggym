@@ -7,6 +7,7 @@ import com.sabdev.froggym.data.entities.ExerciseType
 import com.sabdev.froggym.data.entities.Routine
 import com.sabdev.froggym.data.repository.ExerciseRepository
 import com.sabdev.froggym.data.repository.RoutineRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,6 +22,10 @@ class RoutineViewModel(
 
     private val _calisthenicRoutines = MutableStateFlow<List<Routine>>(emptyList())
     val calisthenicRoutines: StateFlow<List<Routine>> = _calisthenicRoutines
+
+    fun getRoutineById(id: Int): Flow<Routine?> {
+        return routineRepository.getRoutineById(id)
+    }
 
     private val _exercises = MutableStateFlow<List<Exercise>>(emptyList())
     val exercises: StateFlow<List<Exercise>> = _exercises
@@ -85,11 +90,13 @@ class RoutineViewModel(
         }
     }
 
-    fun deleteRoutine(routine: Routine) {
-        viewModelScope.launch {
+fun deleteRoutines(routines: List<Routine>) {
+    viewModelScope.launch {
+        routines.forEach { routine ->
             routineRepository.deleteRoutine(routine)
         }
     }
+}
 
     fun getExercisesByType(type: ExerciseType): StateFlow<List<Exercise>> {
         return when (type) {

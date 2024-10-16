@@ -134,6 +134,10 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                         viewModel = routineViewModel,
                         onCreateRoutine = {
                             navController.navigate(Screen.CreateRoutine.route)
+                        },
+                        onRoutineSelected = { routineId ->
+                            // Navigate to routine details screen (you need to implement this)
+                            navController.navigate("routine_details/$routineId")
                         }
                     )
                 }
@@ -165,6 +169,13 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                             navController.popBackStack()
                         }
                     )
+                }
+                // Add a new composable for routine details if needed
+                composable("routine_details/{routineId}") { backStackEntry ->
+                    val routineId = backStackEntry.arguments?.getString("routineId")
+                    if (routineId != null) {
+                        RoutineDetailsScreen(routineId = routineId.toInt(), viewModel = routineViewModel)
+                    }
                 }
             }
         }

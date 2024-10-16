@@ -13,6 +13,9 @@ interface RoutineDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRoutine(routine: Routine)
 
+    @Query("SELECT * FROM routines WHERE id = :id")
+    fun getRoutineById(id: Int): Flow<Routine?>
+
     @Delete
     suspend fun deleteRoutine(routine: Routine)
 }
