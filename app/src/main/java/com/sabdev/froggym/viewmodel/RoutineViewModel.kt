@@ -25,11 +25,19 @@ class RoutineViewModel(
     private val _exercises = MutableStateFlow<List<Exercise>>(emptyList())
     val exercises: StateFlow<List<Exercise>> = _exercises
 
+    private val _gymExercises = MutableStateFlow<List<Exercise>>(emptyList())
+    val gymExercises: StateFlow<List<Exercise>> = _gymExercises
+
+    private val _calisthenicExercises = MutableStateFlow<List<Exercise>>(emptyList())
+    val calisthenicExercises: StateFlow<List<Exercise>> = _calisthenicExercises
+
     init {
         viewModelScope.launch {
             exerciseRepository.insertPredefinedExercises()
             loadRoutines()
             loadExercises()
+            loadGymExercises()
+            loadCalisthenicExercises()
         }
     }
 
@@ -54,6 +62,22 @@ class RoutineViewModel(
         }
     }
 
+    private fun loadGymExercises() {
+        viewModelScope.launch {
+            exerciseRepository.getExercisesByType(ExerciseType.GYM).collect {
+                _gymExercises.value = it
+            }
+        }
+    }
+
+    private fun loadCalisthenicExercises() {
+        viewModelScope.launch {
+            exerciseRepository.getExercisesByType(ExerciseType.CALISTHENICS).collect {
+                _calisthenicExercises.value = it
+            }
+        }
+    }
+
     fun createRoutine(name: String, type: ExerciseType, exerciseIds: List<Int>) {
         viewModelScope.launch {
             val newRoutine = Routine(name = name, type = type, exerciseIds = exerciseIds)
@@ -68,12 +92,9 @@ class RoutineViewModel(
     }
 
     fun getExercisesByType(type: ExerciseType): StateFlow<List<Exercise>> {
-        val exercisesByType = MutableStateFlow<List<Exercise>>(emptyList())
-        viewModelScope.launch {
-            exerciseRepository.getExercisesByType(type).collect {
-                exercisesByType.value = it
-            }
+        return when (type) {
+            ExerciseType.GYM -> gymExercises
+            ExerciseType.CALISTHENICS -> calisthenicExercises
         }
-        return exercisesByType
     }
 }

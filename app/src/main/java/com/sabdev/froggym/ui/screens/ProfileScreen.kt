@@ -38,9 +38,11 @@ fun ProfileScreen(
     val colorScheme = MaterialTheme.colorScheme
     val gradientColors = listOf(
         colorScheme.primary,
+        colorScheme.primary,
         colorScheme.onSecondary,
         colorScheme.primary,
         colorScheme.onTertiary,
+        colorScheme.primary,
         colorScheme.primary
     )
 
@@ -138,7 +140,7 @@ fun UserStat(label: String, value: String) {
         Spacer(modifier = Modifier.height(spaceBetweenValueAndLabel))
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.headlineLarge,
             fontSize = labelFontSize
         )
     }

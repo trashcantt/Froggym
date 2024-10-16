@@ -23,12 +23,8 @@ fun RoutinesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis Rutinas") },
-                actions = {
-                    TextButton(onClick = onCreateRoutine) {
-                        Text("Crear Rutina")
-                    }
-                }
+                title = { Text("Mis Rutinas",
+                    style = MaterialTheme.typography.headlineLarge) },
             )
         }
     ) { innerPadding ->

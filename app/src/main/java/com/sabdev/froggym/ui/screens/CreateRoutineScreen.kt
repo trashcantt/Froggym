@@ -7,44 +7,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.ui.Alignment
 import com.sabdev.froggym.data.entities.Exercise
 import com.sabdev.froggym.data.entities.ExerciseType
 import com.sabdev.froggym.viewmodel.RoutineViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateRoutineScreen(
-    viewModel: RoutineViewModel,
-    onRoutineCreated: () -> Unit
-) {
+fun CreateRoutineScreen(viewModel: RoutineViewModel, onRoutineCreated: () -> Unit) {
     var routineName by remember { mutableStateOf("") }
-    var selectedType by remember { mutableStateOf(ExerciseType.GYM) }
-    var selectedExercises by remember { mutableStateOf(setOf<Int>()) }
+    var isGymRoutine by remember { mutableStateOf(true) }
+    var selectedExercises by remember { mutableStateOf(listOf<Int>()) }
 
-    val exercises by viewModel.getExercisesByType(selectedType).collectAsState(initial = emptyList())
+    val exercises by (if (isGymRoutine) viewModel.gymExercises else viewModel.calisthenicExercises)
+        .collectAsState(initial = emptyList())
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Crear Rutina") },
-                actions = {
-                    TextButton(
-                        onClick = {
-                            if (routineName.isNotBlank() && selectedExercises.isNotEmpty()) {
-                                viewModel.createRoutine(routineName, selectedType, selectedExercises.toList())
-                                onRoutineCreated()
-                            }
-                        }
-                    ) {
-                        Text("Guardar")
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .padding(innerPadding)
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
@@ -62,18 +44,18 @@ fun CreateRoutineScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = { selectedType = ExerciseType.GYM },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedType == ExerciseType.GYM) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                    )
+                    onClick = { isGymRoutine = true },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
                 ) {
                     Text("Gimnasio")
                 }
                 Button(
-                    onClick = { selectedType = ExerciseType.CALISTHENICS },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedType == ExerciseType.CALISTHENICS) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                    )
+                    onClick = { isGymRoutine = false },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
                 ) {
                     Text("Calistenia")
                 }
@@ -81,44 +63,59 @@ fun CreateRoutineScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn {
-                items(exercises) { exercise ->
-                    ExerciseItem(
-                        exercise = exercise,
-                        isSelected = selectedExercises.contains(exercise.id),
-                        onSelectionChanged = { isSelected ->
-                            selectedExercises = if (isSelected) {
-                                selectedExercises + exercise.id
-                            } else {
-                                selectedExercises - exercise.id
-                            }
-                        }
+            ExerciseList(
+                exercises = exercises,
+                selectedExercises = selectedExercises,
+                onSelectionChanged = { selectedExercises = it }
+            )
+        }
+
+        FloatingActionButton(
+            onClick = {
+                if (routineName.isNotBlank() && selectedExercises.isNotEmpty()) {
+                    viewModel.createRoutine(
+                        name = routineName,
+                        type = if (isGymRoutine) ExerciseType.GYM else ExerciseType.CALISTHENICS,
+                        exerciseIds = selectedExercises
                     )
+                    onRoutineCreated()
                 }
-            }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = "Crear Rutina")
         }
     }
 }
 
 @Composable
-fun ExerciseItem(
-    exercise: Exercise,
-    isSelected: Boolean,
-    onSelectionChanged: (Boolean) -> Unit
+fun ExerciseList(
+    exercises: List<Exercise>,
+    selectedExercises: List<Int>,
+    onSelectionChanged: (List<Int>) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column {
-            Text(text = exercise.name, style = MaterialTheme.typography.bodyLarge)
-            Text(text = exercise.description, style = MaterialTheme.typography.bodyMedium)
+    LazyColumn {
+        items(exercises) { exercise ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Checkbox(
+                    checked = selectedExercises.contains(exercise.id),
+                    onCheckedChange = { isChecked ->
+                        val newSelection = if (isChecked) {
+                            selectedExercises + exercise.id
+                        } else {
+                            selectedExercises - exercise.id
+                        }
+                        onSelectionChanged(newSelection)
+                    }
+                )
+                Text(text = exercise.name, modifier = Modifier.padding(start = 8.dp))
+            }
         }
-        Checkbox(
-            checked = isSelected,
-            onCheckedChange = onSelectionChanged
-        )
     }
 }
