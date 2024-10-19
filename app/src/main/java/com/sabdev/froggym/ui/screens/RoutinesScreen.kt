@@ -6,17 +6,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.sabdev.froggym.data.entities.ExerciseType
-import com.sabdev.froggym.data.entities.Routine
+import com.sabdev.froggym.data.entities.*
 import com.sabdev.froggym.viewmodel.RoutineViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutinesScreen(
     viewModel: RoutineViewModel,
@@ -24,22 +24,19 @@ fun RoutinesScreen(
     onRoutineSelected: (Int) -> Unit
 ) {
     var selectedType by remember { mutableStateOf(ExerciseType.GYM) }
-    val routines by (if (selectedType == ExerciseType.GYM) viewModel.gymRoutines else viewModel.calisthenicRoutines).collectAsState()
-    var selectedRoutines by remember { mutableStateOf(setOf<Routine>()) }
-    var isSelectionMode by remember { mutableStateOf(false) }
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val gymTabs = listOf("Mis Rutinas", "PPL", "Arnold Split", "Heavy Duty")
+    val calistheniasTabs = listOf("Mis Rutinas", "Principiante", "Intermedio", "Avanzado")
+    val tabs = if (selectedType == ExerciseType.GYM) gymTabs else calistheniasTabs
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis Rutinas", style = MaterialTheme.typography.headlineLarge) },
+                title = { Text("Rutinas", style = MaterialTheme.typography.headlineLarge) },
                 actions = {
-                    if (isSelectionMode) {
-                        IconButton(onClick = {
-                            viewModel.deleteRoutines(selectedRoutines.toList())
-                            selectedRoutines = emptySet()
-                            isSelectionMode = false
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Eliminar seleccionadas")
+                    if (selectedTabIndex == 0) {
+                        IconButton(onClick = onCreateRoutine) {
+                            Icon(Icons.Default.Add, contentDescription = "Crear rutina")
                         }
                     }
                 }
@@ -58,7 +55,10 @@ fun RoutinesScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = { selectedType = ExerciseType.GYM },
+                    onClick = {
+                        selectedType = ExerciseType.GYM
+                        selectedTabIndex = 0
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedType == ExerciseType.GYM) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                     ),
@@ -67,7 +67,10 @@ fun RoutinesScreen(
                     Text("Gimnasio")
                 }
                 Button(
-                    onClick = { selectedType = ExerciseType.CALISTHENICS },
+                    onClick = {
+                        selectedType = ExerciseType.CALISTHENICS
+                        selectedTabIndex = 0
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedType == ExerciseType.CALISTHENICS) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                     ),
@@ -76,38 +79,127 @@ fun RoutinesScreen(
                     Text("Calistenia")
                 }
             }
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                items(routines) { routine ->
-                    RoutineItem(
-                        routine = routine,
-                        isSelected = selectedRoutines.contains(routine),
-                        isSelectionMode = isSelectionMode,
-                        onClick = {
-                            if (isSelectionMode) {
-                                selectedRoutines = if (selectedRoutines.contains(routine)) {
-                                    selectedRoutines - routine
-                                } else {
-                                    selectedRoutines + routine
-                                }
-                                if (selectedRoutines.isEmpty()) {
-                                    isSelectionMode = false
-                                }
-                            } else {
-                                onRoutineSelected(routine.id)
-                            }
-                        },
-                        onLongClick = {
-                            if (!isSelectionMode) {
-                                isSelectionMode = true
-                                selectedRoutines = setOf(routine)
-                            }
-                        }
+
+            TabRow(selectedTabIndex = selectedTabIndex) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(title) }
                     )
                 }
             }
+
+            when {
+                selectedTabIndex == 0 -> UserRoutines(viewModel, onRoutineSelected, selectedType)
+                else -> PredefinedRoutines(tabs[selectedTabIndex], onRoutineSelected, selectedType)
+            }
+        }
+    }
+}
+
+@Composable
+fun UserRoutines(viewModel: RoutineViewModel, onRoutineSelected: (Int) -> Unit, exerciseType: ExerciseType) {
+    val routines by (if (exerciseType == ExerciseType.GYM) viewModel.gymRoutines else viewModel.calisthenicRoutines).collectAsState()
+    var selectedRoutines by remember { mutableStateOf(setOf<Routine>()) }
+    var isSelectionMode by remember { mutableStateOf(false) }
+
+    RoutineList(
+        routines = routines,
+        selectedRoutines = selectedRoutines,
+        isSelectionMode = isSelectionMode,
+        onRoutineSelected = onRoutineSelected,
+        onSelectionChanged = { routine, selected ->
+            selectedRoutines = if (selected) {
+                selectedRoutines + routine
+            } else {
+                selectedRoutines - routine
+            }
+            if (selectedRoutines.isEmpty()) {
+                isSelectionMode = false
+            }
+        },
+        onLongPress = { routine ->
+            if (!isSelectionMode) {
+                isSelectionMode = true
+                selectedRoutines = setOf(routine)
+            }
+        }
+    )
+}
+
+@Composable
+fun PredefinedRoutines(level: String, onRoutineSelected: (Int) -> Unit, exerciseType: ExerciseType) {
+    val predefinedRoutines by remember(level, exerciseType) {
+        derivedStateOf {
+            when (level) {
+                "PPL" -> listOf(
+                    Routine(1, "Push", exerciseType, listOf(1, 2, 3)),
+                    Routine(2, "Pull", exerciseType, listOf(4, 5, 6)),
+                    Routine(3, "Legs", exerciseType, listOf(7, 8, 9))
+                )
+                "Arnold Split" -> listOf(
+                    Routine(4, "Chest & Back", exerciseType, listOf(10, 11, 12)),
+                    Routine(5, "Shoulders & Arms", exerciseType, listOf(13, 14, 15)),
+                    Routine(6, "Legs", exerciseType, listOf(16, 17, 18))
+                )
+                "Heavy Duty" -> listOf(
+                    Routine(7, "Full Body", exerciseType, listOf(19, 20, 21))
+                )
+                "Principiante" -> listOf(
+                    Routine(8, "Rutina de fuerza para principiantes", exerciseType, listOf(22, 23, 24)),
+                    Routine(9, "Rutina de cardio para principiantes", exerciseType, listOf(25, 26, 27))
+                )
+                "Intermedio" -> listOf(
+                    Routine(10, "Rutina de hipertrofia intermedia", exerciseType, listOf(28, 29, 30)),
+                    Routine(11, "Rutina de resistencia intermedia", exerciseType, listOf(31, 32, 33))
+                )
+                "Avanzado" -> listOf(
+                    Routine(12, "Rutina de potencia avanzada", exerciseType, listOf(34, 35, 36)),
+                    Routine(13, "Rutina de calistenia avanzada", exerciseType, listOf(37, 38, 39))
+                )
+                else -> emptyList()
+            }
+        }
+    }
+
+    RoutineList(
+        routines = predefinedRoutines,
+        selectedRoutines = emptySet(),
+        isSelectionMode = false,
+        onRoutineSelected = onRoutineSelected,
+        onSelectionChanged = { _, _ -> },
+        onLongPress = { }
+    )
+}
+
+@Composable
+fun RoutineList(
+    routines: List<Routine>,
+    selectedRoutines: Set<Routine>,
+    isSelectionMode: Boolean,
+    onRoutineSelected: (Int) -> Unit,
+    onSelectionChanged: (Routine, Boolean) -> Unit,
+    onLongPress: (Routine) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp)
+    ) {
+        items(routines) { routine ->
+            RoutineItem(
+                routine = routine,
+                isSelected = selectedRoutines.contains(routine),
+                isSelectionMode = isSelectionMode,
+                onClick = {
+                    if (isSelectionMode) {
+                        onSelectionChanged(routine, !selectedRoutines.contains(routine))
+                    } else {
+                        onRoutineSelected(routine.id)
+                    }
+                },
+                onLongClick = { onLongPress(routine) }
+            )
         }
     }
 }
