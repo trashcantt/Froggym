@@ -1,21 +1,16 @@
 package com.sabdev.froggym.ui.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import com.sabdev.froggym.data.entities.*
 import com.sabdev.froggym.viewmodel.RoutineViewModel
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutinesScreen(
@@ -28,7 +23,6 @@ fun RoutinesScreen(
     val gymTabs = listOf("Mis Rutinas", "PPL", "Arnold Split", "Heavy Duty")
     val calistheniasTabs = listOf("Mis Rutinas", "Principiante", "Intermedio", "Avanzado")
     val tabs = if (selectedType == ExerciseType.GYM) gymTabs else calistheniasTabs
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -79,7 +73,6 @@ fun RoutinesScreen(
                     Text("Calistenia")
                 }
             }
-
             TabRow(selectedTabIndex = selectedTabIndex) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
@@ -89,7 +82,6 @@ fun RoutinesScreen(
                     )
                 }
             }
-
             when {
                 selectedTabIndex == 0 -> UserRoutines(viewModel, onRoutineSelected, selectedType)
                 else -> PredefinedRoutines(tabs[selectedTabIndex], onRoutineSelected, selectedType)
@@ -97,13 +89,11 @@ fun RoutinesScreen(
         }
     }
 }
-
 @Composable
 fun UserRoutines(viewModel: RoutineViewModel, onRoutineSelected: (Int) -> Unit, exerciseType: ExerciseType) {
     val routines by (if (exerciseType == ExerciseType.GYM) viewModel.gymRoutines else viewModel.calisthenicRoutines).collectAsState()
     var selectedRoutines by remember { mutableStateOf(setOf<Routine>()) }
     var isSelectionMode by remember { mutableStateOf(false) }
-
     RoutineList(
         routines = routines,
         selectedRoutines = selectedRoutines,
@@ -127,7 +117,6 @@ fun UserRoutines(viewModel: RoutineViewModel, onRoutineSelected: (Int) -> Unit, 
         }
     )
 }
-
 @Composable
 fun PredefinedRoutines(level: String, onRoutineSelected: (Int) -> Unit, exerciseType: ExerciseType) {
     val predefinedRoutines by remember(level, exerciseType) {
@@ -162,7 +151,6 @@ fun PredefinedRoutines(level: String, onRoutineSelected: (Int) -> Unit, exercise
             }
         }
     }
-
     RoutineList(
         routines = predefinedRoutines,
         selectedRoutines = emptySet(),
@@ -172,7 +160,6 @@ fun PredefinedRoutines(level: String, onRoutineSelected: (Int) -> Unit, exercise
         onLongPress = { }
     )
 }
-
 @Composable
 fun RoutineList(
     routines: List<Routine>,
@@ -203,7 +190,6 @@ fun RoutineList(
         }
     }
 }
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RoutineItem(
