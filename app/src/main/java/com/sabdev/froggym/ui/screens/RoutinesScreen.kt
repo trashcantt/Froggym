@@ -1,5 +1,4 @@
 package com.sabdev.froggym.ui.screens
-
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -23,18 +22,34 @@ fun RoutinesScreen(
     val gymTabs = listOf("Mis Rutinas", "PPL", "Arnold Split", "Heavy Duty")
     val calistheniasTabs = listOf("Mis Rutinas", "Principiante", "Intermedio", "Avanzado")
     val tabs = if (selectedType == ExerciseType.GYM) gymTabs else calistheniasTabs
+    var isSelectionMode by remember { mutableStateOf(false) }
+    var selectedRoutines by remember { mutableStateOf(setOf<Routine>()) }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Rutinas", style = MaterialTheme.typography.headlineLarge) },
-                actions = {
-                    if (selectedTabIndex == 0) {
-                        IconButton(onClick = onCreateRoutine) {
-                            Icon(Icons.Default.Add, contentDescription = "Crear rutina")
+                title = { Text("Rutinas", style = MaterialTheme.typography.headlineLarge) }
+            )
+        },
+        floatingActionButton = {
+            if (selectedTabIndex == 0) {
+                FloatingActionButton(
+                    onClick = {
+                        if (isSelectionMode) {
+                            viewModel.deleteRoutines(selectedRoutines.toList())
+                            isSelectionMode = false
+                            selectedRoutines = emptySet()
+                        } else {
+                            onCreateRoutine()
                         }
                     }
+                ) {
+                    Icon(
+                        imageVector = if (isSelectionMode) Icons.Default.Delete else Icons.Default.Add,
+                        contentDescription = if (isSelectionMode) "Eliminar rutinas seleccionadas" else "Crear rutina"
+                    )
                 }
-            )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -83,36 +98,53 @@ fun RoutinesScreen(
                 }
             }
             when {
-                selectedTabIndex == 0 -> UserRoutines(viewModel, onRoutineSelected, selectedType)
+                selectedTabIndex == 0 -> UserRoutines(
+                    viewModel = viewModel,
+                    onRoutineSelected = onRoutineSelected,
+                    exerciseType = selectedType,
+                    isSelectionMode = isSelectionMode,
+                    selectedRoutines = selectedRoutines,
+                    onSelectionModeChanged = { isSelectionMode = it },
+                    onSelectedRoutinesChanged = { selectedRoutines = it }
+                )
                 else -> PredefinedRoutines(tabs[selectedTabIndex], onRoutineSelected, selectedType)
             }
         }
     }
 }
+
 @Composable
-fun UserRoutines(viewModel: RoutineViewModel, onRoutineSelected: (Int) -> Unit, exerciseType: ExerciseType) {
+fun UserRoutines(
+    viewModel: RoutineViewModel,
+    onRoutineSelected: (Int) -> Unit,
+    exerciseType: ExerciseType,
+    isSelectionMode: Boolean,
+    selectedRoutines: Set<Routine>,
+    onSelectionModeChanged: (Boolean) -> Unit,
+    onSelectedRoutinesChanged: (Set<Routine>) -> Unit
+) {
     val routines by (if (exerciseType == ExerciseType.GYM) viewModel.gymRoutines else viewModel.calisthenicRoutines).collectAsState()
-    var selectedRoutines by remember { mutableStateOf(setOf<Routine>()) }
-    var isSelectionMode by remember { mutableStateOf(false) }
+
     RoutineList(
         routines = routines,
         selectedRoutines = selectedRoutines,
         isSelectionMode = isSelectionMode,
         onRoutineSelected = onRoutineSelected,
         onSelectionChanged = { routine, selected ->
-            selectedRoutines = if (selected) {
+            val newSelectedRoutines = if (selected) {
                 selectedRoutines + routine
             } else {
                 selectedRoutines - routine
             }
-            if (selectedRoutines.isEmpty()) {
-                isSelectionMode = false
+            onSelectedRoutinesChanged(newSelectedRoutines)
+            if (newSelectedRoutines.isEmpty()) {
+                onSelectionModeChanged(false)
             }
         },
         onLongPress = { routine ->
             if (!isSelectionMode) {
-                isSelectionMode = true
-                selectedRoutines = setOf(routine)
+                onSelectionModeChanged(true)
+                onSelectedRoutinesChanged(setOf(routine))
             }
         }
     )
@@ -237,7 +269,7 @@ fun RoutineItem(
             if (isSelectionMode) {
                 Checkbox(
                     checked = isSelected,
-                    onCheckedChange = null // La selección se maneja en onClick
+                    onCheckedChange = null
                 )
             }
         }

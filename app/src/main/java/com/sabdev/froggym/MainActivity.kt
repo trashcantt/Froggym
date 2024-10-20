@@ -110,17 +110,6 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                         )
                     }
                 }
-            },
-            floatingActionButton = {
-                if (navController.currentBackStackEntryAsState().value?.destination?.route == Screen.Routines.route) {
-                    FloatingActionButton(
-                        onClick = {
-                            navController.navigate(Screen.CreateRoutine.route)
-                        }
-                    ) {
-                        Icon(Icons.Filled.Add, contentDescription = "Create Routine")
-                    }
-                }
             }
         ) { innerPadding ->
             NavHost(
