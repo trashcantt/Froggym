@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sabdev.froggym"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -51,8 +51,6 @@ android {
 }
 
 dependencies {
-
-    implementation (libs.androidx.material.icons.extended)
     implementation (libs.gson)
 
     implementation(libs.coil.compose)

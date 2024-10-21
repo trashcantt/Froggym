@@ -117,8 +117,8 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                 startDestination = Screen.Home.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable(Screen.Home.route) { HomeScreen() }
-                composable(Screen.Routines.route) {
+                composable(Screen.Home.route) { HomeScreen(authViewModel = authViewModel) }
+                composable (Screen.Routines.route) {
                     RoutinesScreen(
                         viewModel = routineViewModel,
                         onCreateRoutine = {
@@ -163,7 +163,10 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                 composable("routine_details/{routineId}") { backStackEntry ->
                     val routineId = backStackEntry.arguments?.getString("routineId")
                     if (routineId != null) {
-                        RoutineDetailsScreen(routineId = routineId.toInt(), viewModel = routineViewModel)
+                        RoutineDetailsScreen(
+                            routineId = routineId.toInt(),
+                            viewModel = routineViewModel
+                        )
                     }
                 }
             }
