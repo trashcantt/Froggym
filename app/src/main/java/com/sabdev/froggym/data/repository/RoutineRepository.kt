@@ -32,4 +32,13 @@ class RoutineRepository(private val routineDao: RoutineDao) {
     suspend fun getRoutineWithExercisesById(id: Long): RoutineWithExercises {
         return routineDao.getRoutineWithExercises(id)
     }
+
+    suspend fun updateRoutine(routine: Routine) {
+        routineDao.updateRoutine(routine)
+    }
+
+    suspend fun removeExerciseFromRoutine(routineId: Long, exerciseId: Long) {
+        routineDao.deleteRoutineExerciseCrossRef(RoutineExerciseCrossRef(routineId, exerciseId))
+    }
+
 }

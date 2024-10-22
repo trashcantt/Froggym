@@ -35,4 +35,10 @@ interface RoutineDao {
     @Transaction
     @Query("SELECT * FROM routines WHERE id = :id")
     suspend fun getRoutineWithExercises(id: Long): RoutineWithExercises
+
+    @Update
+    suspend fun updateRoutine(routine: Routine)
+
+    @Delete
+    suspend fun deleteRoutineExerciseCrossRef(crossRef: RoutineExerciseCrossRef)
 }

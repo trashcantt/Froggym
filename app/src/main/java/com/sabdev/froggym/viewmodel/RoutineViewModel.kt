@@ -11,6 +11,7 @@ import com.sabdev.froggym.data.repository.RoutineRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class RoutineViewModel(
@@ -38,6 +39,17 @@ class RoutineViewModel(
 
     private val _selectedRoutine = MutableStateFlow<RoutineWithExercises?>(null)
     val selectedRoutine: StateFlow<RoutineWithExercises?> = _selectedRoutine
+
+    private val _routineType = MutableStateFlow<ExerciseType?>(null)
+    val routineType: StateFlow<ExerciseType?> = _routineType
+
+    fun getRoutineType(routineId: Long) {
+        viewModelScope.launch {
+            routineRepository.getRoutineById(routineId).collect { routine ->
+                _routineType.value = routine?.type
+            }
+        }
+    }
 
     init {
         viewModelScope.launch {
@@ -129,6 +141,52 @@ class RoutineViewModel(
                 // Handle error
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    fun updateRoutine(routineId: Long, newName: String) {
+        viewModelScope.launch {
+            try {
+                val existingRoutine = routineRepository.getRoutineById(routineId).first()
+                if (existingRoutine != null) {
+                    val updatedRoutine = existingRoutine.copy(name = newName)
+                    routineRepository.updateRoutine(updatedRoutine)
+                    // Refresh the selected routine
+                    loadRoutineWithExercises(routineId)
+                } else {
+                    // Handle case where routine is not found
+                    // You might want to add error handling or logging here
+                }
+            } catch (e: Exception) {
+                // Handle any errors that occur during the update
+                // You might want to add error handling or logging here
+            }
+        }
+    }
+
+    fun addExerciseToRoutine(routineId: Long, exercise: Exercise) {
+        viewModelScope.launch {
+            try {
+                routineRepository.addExerciseToRoutine(routineId, exercise.id)
+                // Refresh the selected routine to reflect the changes
+                loadRoutineWithExercises(routineId)
+            } catch (e: Exception) {
+                // Handle any errors that occur during the addition
+                // You might want to add error handling or logging here
+            }
+        }
+    }
+
+    fun removeExerciseFromRoutine(routineId: Long, exercise: Exercise) {
+        viewModelScope.launch {
+            try {
+                routineRepository.removeExerciseFromRoutine(routineId, exercise.id)
+                // Refresh the selected routine to reflect the changes
+                loadRoutineWithExercises(routineId)
+            } catch (e: Exception) {
+                // Handle any errors that occur during the removal
+                // You might want to add error handling or logging here
             }
         }
     }
