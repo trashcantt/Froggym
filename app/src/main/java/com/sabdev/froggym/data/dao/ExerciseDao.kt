@@ -10,15 +10,15 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises")
     fun getAllExercises(): Flow<List<Exercise>>
 
-    @Query("SELECT * FROM exercises WHERE type = :type")
-    fun getExercisesByType(type: ExerciseType): Flow<List<Exercise>>
-
     @Query("SELECT * FROM exercises WHERE id = :id")
-    suspend fun getExerciseById(id: Int): Exercise?
+    suspend fun getExerciseById(id: Long): Exercise?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(exercises: List<Exercise>)
 
     @Query("SELECT COUNT(*) FROM exercises")
     suspend fun getExerciseCount(): Int
+
+    @Query("SELECT * FROM exercises WHERE type = :type")
+    fun getExercisesByType(type: ExerciseType): Flow<List<Exercise>>
 }

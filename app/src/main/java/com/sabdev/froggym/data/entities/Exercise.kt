@@ -5,12 +5,13 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "exercises")
 data class Exercise(
-    @PrimaryKey val id: Int,
+    @PrimaryKey val id: Long,
     val name: String,
     val description: String,
-    val type: ExerciseType
+    val type: ExerciseType,
+    val sets: Int,
+    val reps: Int
 )
-
 enum class ExerciseType {
     GYM, CALISTHENICS
 }

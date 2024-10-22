@@ -1,17 +1,14 @@
 package com.sabdev.froggym.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.ui.Alignment
-import com.sabdev.froggym.data.entities.Exercise
-import com.sabdev.froggym.data.entities.ExerciseType
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.unit.dp
+import com.sabdev.froggym.data.entities.*
 import com.sabdev.froggym.viewmodel.RoutineViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -19,7 +16,7 @@ import com.sabdev.froggym.viewmodel.RoutineViewModel
 fun CreateRoutineScreen(viewModel: RoutineViewModel, onRoutineCreated: () -> Unit) {
     var routineName by remember { mutableStateOf("") }
     var isGymRoutine by remember { mutableStateOf(true) }
-    var selectedExercises by remember { mutableStateOf(listOf<Int>()) }
+    var selectedExercises by remember { mutableStateOf(listOf<Long>()) }
 
     val exercises by (if (isGymRoutine) viewModel.gymExercises else viewModel.calisthenicExercises)
         .collectAsState(initial = emptyList())
@@ -93,8 +90,8 @@ fun CreateRoutineScreen(viewModel: RoutineViewModel, onRoutineCreated: () -> Uni
 @Composable
 fun ExerciseList(
     exercises: List<Exercise>,
-    selectedExercises: List<Int>,
-    onSelectionChanged: (List<Int>) -> Unit
+    selectedExercises: List<Long>,
+    onSelectionChanged: (List<Long>) -> Unit
 ) {
     LazyColumn {
         items(exercises) { exercise ->

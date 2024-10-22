@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sabdev.froggym.data.entities.Exercise
 import com.sabdev.froggym.data.entities.ExerciseType
 import com.sabdev.froggym.data.entities.Routine
+import com.sabdev.froggym.data.entities.RoutineWithExercises
 import com.sabdev.froggym.data.repository.ExerciseRepository
 import com.sabdev.froggym.data.repository.RoutineRepository
 import kotlinx.coroutines.flow.Flow
@@ -23,10 +24,6 @@ class RoutineViewModel(
     private val _calisthenicRoutines = MutableStateFlow<List<Routine>>(emptyList())
     val calisthenicRoutines: StateFlow<List<Routine>> = _calisthenicRoutines
 
-    fun getRoutineById(id: Int): Flow<Routine?> {
-        return routineRepository.getRoutineById(id)
-    }
-
     private val _exercises = MutableStateFlow<List<Exercise>>(emptyList())
     val exercises: StateFlow<List<Exercise>> = _exercises
 
@@ -36,6 +33,12 @@ class RoutineViewModel(
     private val _calisthenicExercises = MutableStateFlow<List<Exercise>>(emptyList())
     val calisthenicExercises: StateFlow<List<Exercise>> = _calisthenicExercises
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _selectedRoutine = MutableStateFlow<RoutineWithExercises?>(null)
+    val selectedRoutine: StateFlow<RoutineWithExercises?> = _selectedRoutine
+
     init {
         viewModelScope.launch {
             exerciseRepository.insertPredefinedExercises()
@@ -44,6 +47,10 @@ class RoutineViewModel(
             loadGymExercises()
             loadCalisthenicExercises()
         }
+    }
+
+    fun getRoutineById(id: Long): Flow<Routine?> {
+        return routineRepository.getRoutineById(id)
     }
 
     private fun loadRoutines() {
@@ -83,25 +90,46 @@ class RoutineViewModel(
         }
     }
 
-    fun createRoutine(name: String, type: ExerciseType, exerciseIds: List<Int>) {
+    fun createRoutine(name: String, type: ExerciseType, exerciseIds: List<Long>) {
         viewModelScope.launch {
-            val newRoutine = Routine(name = name, type = type, exerciseIds = exerciseIds)
-            routineRepository.insertRoutine(newRoutine)
+            val newRoutine = Routine(name = name, type = type)
+            val routineId = routineRepository.insertRoutine(newRoutine)
+            exerciseIds.forEach { exerciseId ->
+                routineRepository.addExerciseToRoutine(routineId, exerciseId)
+            }
         }
     }
 
-fun deleteRoutines(routines: List<Routine>) {
-    viewModelScope.launch {
-        routines.forEach { routine ->
-            routineRepository.deleteRoutine(routine)
+    fun deleteRoutines(routines: List<Routine>) {
+        viewModelScope.launch {
+            routines.forEach { routine ->
+                routineRepository.deleteRoutine(routine)
+            }
         }
     }
-}
 
     fun getExercisesByType(type: ExerciseType): StateFlow<List<Exercise>> {
         return when (type) {
             ExerciseType.GYM -> gymExercises
             ExerciseType.CALISTHENICS -> calisthenicExercises
+        }
+    }
+
+    suspend fun getRoutineWithExercisesById(id: Long): RoutineWithExercises {
+        return routineRepository.getRoutineWithExercisesById(id)
+    }
+
+    fun loadRoutineWithExercises(id: Long) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val routine = routineRepository.getRoutineWithExercisesById(id)
+                _selectedRoutine.value = routine
+            } catch (e: Exception) {
+                // Handle error
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 }

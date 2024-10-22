@@ -2,8 +2,7 @@ package com.sabdev.froggym.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,16 +13,35 @@ import com.sabdev.froggym.data.entities.Routine
 import com.sabdev.froggym.viewmodel.RoutineViewModel
 
 @Composable
-fun RoutineDetailsScreen(routineId: Int, viewModel: RoutineViewModel) {
-    val routineState by viewModel.getRoutineById(routineId).collectAsState(initial = null)
-    val exercisesState by viewModel.exercises.collectAsState()
+fun RoutineDetailsScreen(
+    routineId: Long,
+    viewModel: RoutineViewModel
+) {
+    LaunchedEffect(routineId) {
+        viewModel.loadRoutineWithExercises(routineId)
+    }
 
-    routineState?.let { routine ->
-        val routineExercises = exercisesState.filter { it.id in routine.exerciseIds }
-        RoutineDetails(routine, routineExercises)
-    } ?: run {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Routine not found")
+    val routineWithExercises by viewModel.selectedRoutine.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    when {
+        routineWithExercises != null -> {
+            RoutineDetails(
+                routine = routineWithExercises!!.routine,
+                exercises = routineWithExercises!!.exercises
+            )
+        }
+
+        isLoading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        else -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Error loading routine details")
+            }
         }
     }
 }
@@ -36,19 +54,29 @@ fun RoutineDetails(routine: Routine, exercises: List<Exercise>) {
             .padding(16.dp)
     ) {
         item {
-            Text(text = routine.name, style = androidx.compose.ui.text.TextStyle(fontSize = 24.sp))
-            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = routine.name,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Text(
+                text = "Type: ${routine.type}",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
         }
 
         items(exercises) { exercise ->
             ExerciseItem(exercise)
-            Spacer(modifier = Modifier.height(8.dp))
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
         }
 
         item {
             Button(
                 onClick = { /* TODO: Implement start workout functionality */ },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             ) {
                 Text("Start Workout")
             }
@@ -58,10 +86,20 @@ fun RoutineDetails(routine: Routine, exercises: List<Exercise>) {
 
 @Composable
 fun ExerciseItem(exercise: Exercise) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+    var expanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        onClick = { expanded = !expanded }
     ) {
-        Text(text = exercise.name)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = exercise.name, style = MaterialTheme.typography.titleMedium)
+            if (expanded) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Description: ${exercise.description}", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
     }
 }

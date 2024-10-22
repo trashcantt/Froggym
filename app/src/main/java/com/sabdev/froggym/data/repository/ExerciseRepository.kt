@@ -13,48 +13,47 @@ class ExerciseRepository(private val exerciseDao: ExerciseDao) {
         return exerciseDao.getExercisesByType(type)
     }
 
-    suspend fun getExerciseById(id: Int): Exercise? {
+    suspend fun getExerciseById(id: Long): Exercise? {
         return exerciseDao.getExerciseById(id)
     }
 
-    suspend fun insertPredefinedExercises() {
-        if (exerciseDao.getExerciseCount() == 0) {
-            val exercises = listOf(
-                // Ejercicios de Gimnasio
-                Exercise(1, "Press de banca", "Ejercicio de fuerza para el pecho", ExerciseType.GYM),
-                Exercise(2, "Sentadillas", "Ejercicio compuesto para piernas", ExerciseType.GYM),
-                Exercise(3, "Peso muerto", "Ejercicio compuesto para espalda y piernas", ExerciseType.GYM),
-                Exercise(4, "Press militar", "Ejercicio para hombros", ExerciseType.GYM),
-                Exercise(5, "Remo con barra", "Ejercicio para espalda", ExerciseType.GYM),
-                Exercise(6, "Curl de bíceps", "Ejercicio para bíceps", ExerciseType.GYM),
-                Exercise(7, "Extensiones de tríceps", "Ejercicio para tríceps", ExerciseType.GYM),
-                Exercise(8, "Zancadas", "Ejercicio para piernas y glúteos", ExerciseType.GYM),
-                Exercise(9, "Prensa de piernas", "Ejercicio para cuádriceps", ExerciseType.GYM),
-                Exercise(10, "Elevaciones laterales", "Ejercicio para deltoides", ExerciseType.GYM),
-                Exercise(11, "Cruce de poleas", "Ejercicio para pecho", ExerciseType.GYM),
-                Exercise(12, "Curl de martillo", "Ejercicio para bíceps y antebrazos", ExerciseType.GYM),
-                Exercise(13, "Extensiones de cuádriceps", "Ejercicio para cuádriceps", ExerciseType.GYM),
-                Exercise(14, "Curl femoral", "Ejercicio para isquiotibiales", ExerciseType.GYM),
-                Exercise(15, "Face pull", "Ejercicio para hombros y trapecios", ExerciseType.GYM),
+suspend fun insertPredefinedExercises() {
+    if (exerciseDao.getExerciseCount() == 0) {
+        val exercises = listOf(
+            // Ejercicios de Gimnasio
+            Exercise(1L, "Press de banca", "Ejercicio de fuerza para el pecho", ExerciseType.GYM, reps = 10, sets = 3),
+            Exercise(2L, "Sentadillas", "Ejercicio compuesto para piernas", ExerciseType.GYM, reps = 12, sets = 3),
+            Exercise(3L, "Peso muerto", "Ejercicio compuesto para espalda y piernas", ExerciseType.GYM, reps = 8, sets = 3),
+            Exercise(4L, "Press militar", "Ejercicio para hombros", ExerciseType.GYM, reps = 10, sets = 3),
+            Exercise(5L, "Remo con barra", "Ejercicio para espalda", ExerciseType.GYM, reps = 12, sets = 3),
+            Exercise(6L, "Curl de bíceps", "Ejercicio para bíceps", ExerciseType.GYM, reps = 12, sets = 3),
+            Exercise(7L, "Extensiones de tríceps", "Ejercicio para tríceps", ExerciseType.GYM, reps = 12, sets = 3),
+            Exercise(8L, "Zancadas", "Ejercicio para piernas y glúteos", ExerciseType.GYM, reps = 10, sets = 3),
+            Exercise(9L, "Prensa de piernas", "Ejercicio para cuádriceps", ExerciseType.GYM, reps = 12, sets = 3),
+            Exercise(10L, "Elevaciones laterales", "Ejercicio para deltoides", ExerciseType.GYM, reps = 15, sets = 3),
+            Exercise(11L, "Cruce de poleas", "Ejercicio para pecho", ExerciseType.GYM, reps = 12, sets = 3),
+            Exercise(12L, "Curl de martillo", "Ejercicio para bíceps y antebrazos", ExerciseType.GYM, reps = 12, sets = 3),
+            Exercise(13L, "Extensiones de cuádriceps", "Ejercicio para cuádriceps", ExerciseType.GYM, reps = 15, sets = 3),
+            Exercise(14L, "Curl femoral", "Ejercicio para isquiotibiales", ExerciseType.GYM, reps = 12, sets = 3),
+            Exercise(15L, "Face pull", "Ejercicio para hombros y trapecios", ExerciseType.GYM, reps = 15, sets = 3),
 
-                // Ejercicios de Calistenia
-                Exercise(16, "Flexiones", "Ejercicio para pecho y tríceps", ExerciseType.CALISTHENICS),
-                Exercise(17, "Dominadas", "Ejercicio para espalda y bíceps", ExerciseType.CALISTHENICS),
-                Exercise(18, "Dips", "Ejercicio para tríceps y pecho", ExerciseType.CALISTHENICS),
-                Exercise(19, "Sentadillas sin peso", "Ejercicio para piernas", ExerciseType.CALISTHENICS),
-                Exercise(20, "Burpees", "Ejercicio de cuerpo completo", ExerciseType.CALISTHENICS),
-                Exercise(21, "Plancha", "Ejercicio para core", ExerciseType.CALISTHENICS),
-                Exercise(22, "Mountain climbers", "Ejercicio para core y cardio", ExerciseType.CALISTHENICS),
-                Exercise(23, "Pistol squats", "Ejercicio avanzado para piernas", ExerciseType.CALISTHENICS),
-                Exercise(24, "Muscle ups", "Ejercicio avanzado para pecho y espalda", ExerciseType.CALISTHENICS),
-                Exercise(25, "L-sit", "Ejercicio para core y brazos", ExerciseType.CALISTHENICS),
-                Exercise(26, "Handstand push-ups", "Ejercicio avanzado para hombros", ExerciseType.CALISTHENICS),
-                Exercise(27, "Dragon flag", "Ejercicio avanzado para core", ExerciseType.CALISTHENICS),
-                Exercise(28, "Human flag", "Ejercicio avanzado de fuerza", ExerciseType.CALISTHENICS),
-                Exercise(29, "Front lever", "Ejercicio avanzado para espalda y core", ExerciseType.CALISTHENICS),
-                Exercise(30, "Back lever", "Ejercicio avanzado para espalda y core", ExerciseType.CALISTHENICS)
-            )
-            exerciseDao.insertAll(exercises)
+            // Ejercicios de Calistenia
+            Exercise(16L, "Flexiones", "Ejercicio para pecho y tríceps", ExerciseType.CALISTHENICS, reps = 15, sets = 3),
+            Exercise(17L, "Dominadas", "Ejercicio para espalda y bíceps", ExerciseType.CALISTHENICS, reps = 8, sets = 3),
+            Exercise(18L, "Dips", "Ejercicio para tríceps y pecho", ExerciseType.CALISTHENICS, reps = 12, sets = 3),
+            Exercise(19L, "Sentadillas sin peso", "Ejercicio para piernas", ExerciseType.CALISTHENICS, reps = 20, sets = 3),
+            Exercise(20L, "Burpees", "Ejercicio de cuerpo completo", ExerciseType.CALISTHENICS, reps = 15, sets = 3),
+            Exercise(21L, "Plancha", "Ejercicio para core", ExerciseType.CALISTHENICS, reps = 60, sets = 3), // 60 segundos
+            Exercise(22L, "Mountain climbers", "Ejercicio para core y cardio", ExerciseType.CALISTHENICS, reps = 30, sets = 3),
+            Exercise(23L, "Pistol squats", "Ejercicio avanzado para piernas", ExerciseType.CALISTHENICS, reps = 5, sets = 3),
+            Exercise(24L, "Muscle ups", "Ejercicio avanzado para pecho y espalda", ExerciseType.CALISTHENICS, reps = 5, sets = 3),
+            Exercise(25L, "L-sit", "Ejercicio para core y brazos", ExerciseType.CALISTHENICS, reps = 30, sets = 3), // 30 segundos
+            Exercise(26L, "Handstand push-ups", "Ejercicio avanzado para hombros", ExerciseType.CALISTHENICS, reps = 5, sets = 3), Exercise(27L, "Dragon flag", "Ejercicio avanzado para core", ExerciseType.CALISTHENICS, reps = 5, sets = 3),
+            Exercise(28L, "Human flag", "Ejercicio avanzado de fuerza", ExerciseType.CALISTHENICS, reps = 10, sets = 3), // 10 segundos de mantenimiento
+            Exercise(29L, "Front lever", "Ejercicio avanzado para espalda y core", ExerciseType.CALISTHENICS, reps = 10, sets = 3), // 10 segundos de mantenimiento
+            Exercise(30L, "Back lever", "Ejercicio avanzado para espalda y core", ExerciseType.CALISTHENICS, reps = 10, sets = 3) // 10 segundos de mantenimiento
+        )
+        exerciseDao.insertAll(exercises)
         }
     }
 }

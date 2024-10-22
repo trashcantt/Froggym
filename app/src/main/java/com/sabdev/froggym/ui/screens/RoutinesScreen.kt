@@ -1,21 +1,30 @@
 package com.sabdev.froggym.ui.screens
-import androidx.compose.foundation.*
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.sabdev.froggym.data.entities.*
+import com.sabdev.froggym.data.entities.ExerciseType
+import com.sabdev.froggym.data.entities.Routine
 import com.sabdev.froggym.viewmodel.RoutineViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutinesScreen(
     viewModel: RoutineViewModel,
     onCreateRoutine: () -> Unit,
-    onRoutineSelected: (Int) -> Unit
+    onRoutineSelected: (Long) -> Unit
 ) {
     var selectedType by remember { mutableStateOf(ExerciseType.GYM) }
     var selectedTabIndex by remember { mutableStateOf(0) }
@@ -116,17 +125,20 @@ fun RoutinesScreen(
 @Composable
 fun UserRoutines(
     viewModel: RoutineViewModel,
-    onRoutineSelected: (Int) -> Unit,
+    onRoutineSelected: (Long) -> Unit,
     exerciseType: ExerciseType,
     isSelectionMode: Boolean,
     selectedRoutines: Set<Routine>,
     onSelectionModeChanged: (Boolean) -> Unit,
     onSelectedRoutinesChanged: (Set<Routine>) -> Unit
 ) {
-    val routines by (if (exerciseType == ExerciseType.GYM) viewModel.gymRoutines else viewModel.calisthenicRoutines).collectAsState()
+    val userRoutines by when (exerciseType) {
+        ExerciseType.GYM -> viewModel.gymRoutines.collectAsState(initial = emptyList())
+        ExerciseType.CALISTHENICS -> viewModel.calisthenicRoutines.collectAsState(initial = emptyList())
+    }
 
     RoutineList(
-        routines = routines,
+        routines = userRoutines,
         selectedRoutines = selectedRoutines,
         isSelectionMode = isSelectionMode,
         onRoutineSelected = onRoutineSelected,
@@ -137,9 +149,6 @@ fun UserRoutines(
                 selectedRoutines - routine
             }
             onSelectedRoutinesChanged(newSelectedRoutines)
-            if (newSelectedRoutines.isEmpty()) {
-                onSelectionModeChanged(false)
-            }
         },
         onLongPress = { routine ->
             if (!isSelectionMode) {
@@ -149,40 +158,42 @@ fun UserRoutines(
         }
     )
 }
+
 @Composable
-fun PredefinedRoutines(level: String, onRoutineSelected: (Int) -> Unit, exerciseType: ExerciseType) {
-    val predefinedRoutines by remember(level, exerciseType) {
+fun PredefinedRoutines(level: String, onRoutineSelected: (Long) -> Unit, exerciseType: ExerciseType) {
+    val predefinedRoutines by remember {
         derivedStateOf {
             when (level) {
                 "PPL" -> listOf(
-                    Routine(1, "Push", exerciseType, listOf(1, 2, 3)),
-                    Routine(2, "Pull", exerciseType, listOf(4, 5, 6)),
-                    Routine(3, "Legs", exerciseType, listOf(7, 8, 9))
+                    Routine(id = 1, name = "Push", type = exerciseType),
+                    Routine(id = 2, name = "Pull", type = exerciseType),
+                    Routine(id = 3, name = "Legs", type = exerciseType)
                 )
                 "Arnold Split" -> listOf(
-                    Routine(4, "Chest & Back", exerciseType, listOf(10, 11, 12)),
-                    Routine(5, "Shoulders & Arms", exerciseType, listOf(13, 14, 15)),
-                    Routine(6, "Legs", exerciseType, listOf(16, 17, 18))
+                    Routine(id = 4, name = "Chest & Back", type = exerciseType),
+                    Routine(id = 5, name = "Shoulders & Arms", type = exerciseType),
+                    Routine(id = 6, name = "Legs", type = exerciseType)
                 )
                 "Heavy Duty" -> listOf(
-                    Routine(7, "Full Body", exerciseType, listOf(19, 20, 21))
+                    Routine(id = 7, name = "Full Body", type = exerciseType)
                 )
                 "Principiante" -> listOf(
-                    Routine(8, "Rutina de fuerza para principiantes", exerciseType, listOf(22, 23, 24)),
-                    Routine(9, "Rutina de cardio para principiantes", exerciseType, listOf(25, 26, 27))
+                    Routine(id = 8, name = "Rutina de fuerza para principiantes", type = exerciseType),
+                    Routine(id = 9, name = "Rutina de cardio para principiantes", type = exerciseType)
                 )
                 "Intermedio" -> listOf(
-                    Routine(10, "Rutina de hipertrofia intermedia", exerciseType, listOf(28, 29, 30)),
-                    Routine(11, "Rutina de resistencia intermedia", exerciseType, listOf(31, 32, 33))
+                    Routine(id = 10, name = "Rutina de hipertrofia intermedia", type = exerciseType),
+                    Routine(id = 11, name = "Rutina de resistencia intermedia", type = exerciseType)
                 )
                 "Avanzado" -> listOf(
-                    Routine(12, "Rutina de potencia avanzada", exerciseType, listOf(34, 35, 36)),
-                    Routine(13, "Rutina de calistenia avanzada", exerciseType, listOf(37, 38, 39))
+                    Routine(id = 12, name = "Rutina de fuerza avanzada", type = exerciseType),
+                    Routine(id = 13, name = "Rutina de skill avanzada", type = exerciseType)
                 )
                 else -> emptyList()
             }
         }
     }
+
     RoutineList(
         routines = predefinedRoutines,
         selectedRoutines = emptySet(),
@@ -192,19 +203,17 @@ fun PredefinedRoutines(level: String, onRoutineSelected: (Int) -> Unit, exercise
         onLongPress = { }
     )
 }
+
 @Composable
 fun RoutineList(
     routines: List<Routine>,
     selectedRoutines: Set<Routine>,
     isSelectionMode: Boolean,
-    onRoutineSelected: (Int) -> Unit,
+    onRoutineSelected: (Long) -> Unit,
     onSelectionChanged: (Routine, Boolean) -> Unit,
     onLongPress: (Routine) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp)
-    ) {
+    LazyColumn {
         items(routines) { routine ->
             RoutineItem(
                 routine = routine,
@@ -222,6 +231,7 @@ fun RoutineList(
         }
     }
 }
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RoutineItem(
@@ -234,43 +244,30 @@ fun RoutineItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(8.dp)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .fillMaxWidth()
+                .background(if (isSelected) Color.LightGray else Color.White)
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                Text(
-                    text = routine.name,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "Ejercicios: ${routine.exerciseIds.size}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
-            }
             if (isSelectionMode) {
                 Checkbox(
                     checked = isSelected,
-                    onCheckedChange = null
+                    onCheckedChange = { onClick() },
+                    modifier = Modifier.padding(end = 16.dp)
                 )
+            }
+            Column {
+                Text(text = routine.name, style = MaterialTheme.typography.headlineSmall)
+                Text(text = "Type: ${routine.type}", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

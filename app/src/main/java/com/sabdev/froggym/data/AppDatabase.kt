@@ -7,7 +7,7 @@ import androidx.room.*
 import com.sabdev.froggym.data.dao.*
 import com.sabdev.froggym.data.entities.*
 
-@Database(entities = [User::class, Routine::class, Exercise::class], version = 1, exportSchema = false)
+@Database(entities = [User::class, Routine::class, Exercise::class, RoutineExerciseCrossRef::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
