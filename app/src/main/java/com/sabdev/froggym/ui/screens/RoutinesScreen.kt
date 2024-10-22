@@ -116,6 +116,7 @@ fun RoutinesScreen(
                     onSelectionModeChanged = { isSelectionMode = it },
                     onSelectedRoutinesChanged = { selectedRoutines = it }
                 )
+
                 else -> PredefinedRoutines(tabs[selectedTabIndex], onRoutineSelected, selectedType)
             }
         }
@@ -149,6 +150,9 @@ fun UserRoutines(
                 selectedRoutines - routine
             }
             onSelectedRoutinesChanged(newSelectedRoutines)
+            if (newSelectedRoutines.isEmpty()) {
+                onSelectionModeChanged(false)
+            }
         },
         onLongPress = { routine ->
             if (!isSelectionMode) {
@@ -160,35 +164,61 @@ fun UserRoutines(
 }
 
 @Composable
-fun PredefinedRoutines(level: String, onRoutineSelected: (Long) -> Unit, exerciseType: ExerciseType) {
+fun PredefinedRoutines(
+    level: String,
+    onRoutineSelected: (Long) -> Unit,
+    exerciseType: ExerciseType
+) {
     val predefinedRoutines by remember {
         derivedStateOf {
             when (level) {
                 "PPL" -> listOf(
-                    Routine(id = 1, name = "Push", type = exerciseType),
-                    Routine(id = 2, name = "Pull", type = exerciseType),
-                    Routine(id = 3, name = "Legs", type = exerciseType)
+                    Routine(id = 10001, name = "Push", type = exerciseType),
+                    Routine(id = 10002, name = "Pull", type = exerciseType),
+                    Routine(id = 10003, name = "Legs", type = exerciseType)
                 )
+
                 "Arnold Split" -> listOf(
-                    Routine(id = 4, name = "Chest & Back", type = exerciseType),
-                    Routine(id = 5, name = "Shoulders & Arms", type = exerciseType),
-                    Routine(id = 6, name = "Legs", type = exerciseType)
+                    Routine(id = 10004, name = "Chest & Back", type = exerciseType),
+                    Routine(id = 10005, name = "Shoulders & Arms", type = exerciseType),
+                    Routine(id = 10006, name = "Legs", type = exerciseType)
                 )
+
                 "Heavy Duty" -> listOf(
-                    Routine(id = 7, name = "Full Body", type = exerciseType)
+                    Routine(id = 10007, name = "Full Body", type = exerciseType)
                 )
+
                 "Principiante" -> listOf(
-                    Routine(id = 8, name = "Rutina de fuerza para principiantes", type = exerciseType),
-                    Routine(id = 9, name = "Rutina de cardio para principiantes", type = exerciseType)
+                    Routine(
+                        id = 10008,
+                        name = "Rutina de fuerza para principiantes",
+                        type = exerciseType
+                    ),
+                    Routine(
+                        id = 10009,
+                        name = "Rutina de cardio para principiantes",
+                        type = exerciseType
+                    )
                 )
+
                 "Intermedio" -> listOf(
-                    Routine(id = 10, name = "Rutina de hipertrofia intermedia", type = exerciseType),
-                    Routine(id = 11, name = "Rutina de resistencia intermedia", type = exerciseType)
+                    Routine(
+                        id = 10010,
+                        name = "Rutina de hipertrofia intermedia",
+                        type = exerciseType
+                    ),
+                    Routine(
+                        id = 10011,
+                        name = "Rutina de resistencia intermedia",
+                        type = exerciseType
+                    )
                 )
+
                 "Avanzado" -> listOf(
-                    Routine(id = 12, name = "Rutina de fuerza avanzada", type = exerciseType),
-                    Routine(id = 13, name = "Rutina de skill avanzada", type = exerciseType)
+                    Routine(id = 10012, name = "Rutina de fuerza avanzada", type = exerciseType),
+                    Routine(id = 10013, name = "Rutina de skill avanzada", type = exerciseType)
                 )
+
                 else -> emptyList()
             }
         }
@@ -249,12 +279,20 @@ fun RoutineItem(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(if (isSelected) Color.LightGray else Color.White)
+                .background(
+                    if (isSelected)
+                        MaterialTheme.colorScheme.secondaryContainer
+                    else
+                        MaterialTheme.colorScheme.surfaceVariant
+                )
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -266,8 +304,16 @@ fun RoutineItem(
                 )
             }
             Column {
-                Text(text = routine.name, style = MaterialTheme.typography.headlineSmall)
-                Text(text = "Type: ${routine.type}", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = routine.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Type: ${routine.type}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
