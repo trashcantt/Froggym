@@ -109,7 +109,6 @@ fun RoutinesScreen(
                     onSelectionModeChanged = { isSelectionMode = it },
                     onSelectedRoutinesChanged = { selectedRoutines = it }
                 )
-
                 else -> PredefinedRoutines(tabs[selectedTabIndex], onRoutineSelected, selectedType)
             }
         }
@@ -170,48 +169,26 @@ fun PredefinedRoutines(
                     Routine(id = 10002, name = "Pull", type = exerciseType),
                     Routine(id = 10003, name = "Legs", type = exerciseType)
                 )
-
                 "Arnold Split" -> listOf(
                     Routine(id = 10004, name = "Chest & Back", type = exerciseType),
                     Routine(id = 10005, name = "Shoulders & Arms", type = exerciseType),
                     Routine(id = 10006, name = "Legs", type = exerciseType)
                 )
-
                 "Heavy Duty" -> listOf(
                     Routine(id = 10007, name = "Full Body", type = exerciseType)
                 )
-
                 "Principiante" -> listOf(
-                    Routine(
-                        id = 10008,
-                        name = "Rutina de fuerza para principiantes",
-                        type = exerciseType
-                    ),
-                    Routine(
-                        id = 10009,
-                        name = "Rutina de cardio para principiantes",
-                        type = exerciseType
-                    )
+                    Routine(id = 10008, name = "Rutina de fuerza para principiantes", type = exerciseType),
+                    Routine(id = 10009, name = "Rutina de cardio para principiantes", type = exerciseType)
                 )
-
                 "Intermedio" -> listOf(
-                    Routine(
-                        id = 10010,
-                        name = "Rutina de hipertrofia intermedia",
-                        type = exerciseType
-                    ),
-                    Routine(
-                        id = 10011,
-                        name = "Rutina de resistencia intermedia",
-                        type = exerciseType
-                    )
+                    Routine(id = 10010, name = "Rutina de hipertrofia intermedia", type = exerciseType),
+                    Routine(id = 10011, name = "Rutina de resistencia intermedia", type = exerciseType)
                 )
-
                 "Avanzado" -> listOf(
                     Routine(id = 10012, name = "Rutina de fuerza avanzada", type = exerciseType),
                     Routine(id = 10013, name = "Rutina de skill avanzada", type = exerciseType)
                 )
-
                 else -> emptyList()
             }
         }

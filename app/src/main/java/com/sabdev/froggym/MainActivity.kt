@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -50,6 +51,7 @@ import com.sabdev.froggym.viewmodel.AuthViewModel
 import com.sabdev.froggym.viewmodel.AuthViewModelFactory
 import com.sabdev.froggym.viewmodel.RoutineViewModel
 import com.sabdev.froggym.viewmodel.RoutineViewModelFactory
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var routineViewModel: RoutineViewModel
@@ -71,6 +73,10 @@ class MainActivity : ComponentActivity() {
         // Initialize authViewModel
         val authViewModelFactory = AuthViewModelFactory(userDao, application)
         authViewModel = viewModels<AuthViewModel> { authViewModelFactory }.value
+
+        lifecycleScope.launch {
+            routineRepository.initializePredefinedRoutines()
+        }
 
         setContent {
             FroggymTheme {

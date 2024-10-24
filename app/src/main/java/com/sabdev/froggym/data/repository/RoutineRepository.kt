@@ -6,6 +6,7 @@ import com.sabdev.froggym.data.entities.ExerciseType
 import com.sabdev.froggym.data.entities.RoutineExerciseCrossRef
 import com.sabdev.froggym.data.entities.RoutineWithExercises
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 class RoutineRepository(private val routineDao: RoutineDao) {
 
@@ -39,6 +40,38 @@ class RoutineRepository(private val routineDao: RoutineDao) {
 
     suspend fun removeExerciseFromRoutine(routineId: Long, exerciseId: Long) {
         routineDao.deleteRoutineExerciseCrossRef(RoutineExerciseCrossRef(routineId, exerciseId))
+    }
+
+    suspend fun initializePredefinedRoutines() {
+        // Verificar si ya existen rutinas predefinidas
+        if (routineDao.getRoutinesByType(ExerciseType.GYM).first().isEmpty() &&
+            routineDao.getRoutinesByType(ExerciseType.CALISTHENICS).first().isEmpty()) {
+
+            // Rutinas de gimnasio
+            val pplPush = insertRoutineWithExercises("PPL Push", ExerciseType.GYM, listOf(1L, 4L, 7L, 11L))
+            val pplPull = insertRoutineWithExercises("PPL Pull", ExerciseType.GYM, listOf(3L, 5L, 6L, 15L))
+            val pplLegs = insertRoutineWithExercises("PPL Legs", ExerciseType.GYM, listOf(2L, 8L, 9L, 13L, 14L))
+
+            val arnoldChestBack = insertRoutineWithExercises("Arnold Chest & Back", ExerciseType.GYM, listOf(1L, 5L, 11L, 3L))
+            val arnoldShoulderArms = insertRoutineWithExercises("Arnold Shoulders & Arms", ExerciseType.GYM, listOf(4L, 10L, 6L, 7L, 12L))
+            val arnoldLegs = insertRoutineWithExercises("Arnold Legs", ExerciseType.GYM, listOf(2L, 9L, 13L, 14L))
+
+            val heavyDutyUpper = insertRoutineWithExercises("Heavy Duty Upper Body", ExerciseType.GYM, listOf(1L, 4L, 5L, 6L, 7L))
+            val heavyDutyLower = insertRoutineWithExercises("Heavy Duty Lower Body", ExerciseType.GYM, listOf(2L, 3L, 9L, 13L, 14L))
+
+            // Rutinas de calistenia
+            val calistheniaBeginner = insertRoutineWithExercises("Calistenia Principiante", ExerciseType.CALISTHENICS, listOf(16L, 19L, 21L, 22L))
+            val calistheniaIntermediate = insertRoutineWithExercises("Calistenia Intermedio", ExerciseType.CALISTHENICS, listOf(16L, 17L, 18L, 19L, 20L, 21L))
+            val calistheniaAdvanced = insertRoutineWithExercises("Calistenia Avanzado", ExerciseType.CALISTHENICS, listOf(23L, 24L, 25L, 26L, 27L, 28L, 29L, 30L))
+        }
+    }
+
+    private suspend fun insertRoutineWithExercises(name: String, type: ExerciseType, exerciseIds: List<Long>): Long {
+        val routineId = insertRoutine(Routine(name = name, type = type))
+        exerciseIds.forEach { exerciseId ->
+            addExerciseToRoutine(routineId, exerciseId)
+        }
+        return routineId
     }
 
 }
