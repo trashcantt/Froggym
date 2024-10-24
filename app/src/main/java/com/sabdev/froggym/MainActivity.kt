@@ -4,13 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -25,7 +21,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -70,7 +67,6 @@ class MainActivity : ComponentActivity() {
         val routineViewModelFactory = RoutineViewModelFactory(routineRepository, exerciseRepository)
         routineViewModel = viewModels<RoutineViewModel> { routineViewModelFactory }.value
 
-        // Initialize authViewModel
         val authViewModelFactory = AuthViewModelFactory(userDao, application)
         authViewModel = viewModels<AuthViewModel> { authViewModelFactory }.value
 
@@ -101,15 +97,15 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
 
     LaunchedEffect(key1 = true) {
         if (authViewModel.isFirstLaunch()) {
-            navController.navigate("register")
+            navController.navigate("registrarse")
         } else {
             isRegistered = true
         }
     }
 
     if (!isRegistered) {
-        NavHost(navController = navController, startDestination = "register") {
-            composable("register") {
+        NavHost(navController = navController, startDestination = "registrarse") {
+            composable("registrarse") {
                 RegisterScreen(
                     authViewModel = authViewModel,
                     onRegistrationComplete = {
@@ -131,7 +127,13 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                         Screen.Profile
                     ).forEach { screen ->
                         NavigationBarItem(
-                            icon = { Icon(screen.icon, contentDescription = null) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = screen.icon),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(screen.iconSize.dp)
+                                )
+                            },
                             label = { Text(screen.title) },
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                             onClick = {
@@ -161,7 +163,6 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                             navController.navigate(Screen.CreateRoutine.route)
                         },
                         onRoutineSelected = { routineId ->
-                            // Navigate to routine details screen (you need to implement this)
                             navController.navigate("routine_details/$routineId")
                         }
                     )
@@ -195,7 +196,6 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                         }
                     )
                 }
-                // Add a new composable for routine details if needed
                 composable("routine_details/{routineId}") { backStackEntry ->
                     val routineId = backStackEntry.arguments?.getString("routineId")
                     if (routineId != null) {
@@ -208,9 +208,6 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                         )
                     }
                 }
-
-// Add a new composable for the AddExercisesScreen
-                // Add a new composable for the AddExercisesScreen
                 composable("add_exercises/{routineId}") { backStackEntry ->
                     val routineId = backStackEntry.arguments?.getString("routineId")
                     if (routineId != null) {
@@ -220,7 +217,7 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
                         routine?.let {
                             AddExercisesScreen(
                                 routineId = routineIdLong,
-                                routineType = it.type, // Pass the routine type here
+                                routineType = it.type,
                                 viewModel = routineViewModel,
                                 onNavigateBack = {
                                     navController.popBackStack()
@@ -234,10 +231,16 @@ fun MainScreen(authViewModel: AuthViewModel, routineViewModel: RoutineViewModel)
     }
 }
 
-sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
-    object Home : Screen("home", "Home", Icons.Filled.Home)
-    object Routines : Screen("routines", "Routines", Icons.Filled.List)
-    object Profile : Screen("profile", "Profile", Icons.Filled.Person)
-    object EditProfile : Screen("edit_profile", "Edit Profile", Icons.Filled.Edit)
-    object CreateRoutine : Screen("create_routine", "Create Routine", Icons.Filled.Add)
+sealed class Screen(
+    val route: String,
+    val title: String,
+    @DrawableRes val icon: Int,
+    val iconSize: Int = 25
+) {
+    object Home : Screen("home", "Inicio", R.drawable.ic_home)
+    object Routines : Screen("routines", "Rutinas", R.drawable.ic_routines)
+    object Profile : Screen("profile", "Perfil", R.drawable.ic_profile)
+    object EditProfile : Screen("edit_profile", "Editar perfil", R.drawable.ic_launcher_foreground)
+    object CreateRoutine :
+        Screen("create_routine", "Crear rutinas", R.drawable.ic_launcher_background)
 }

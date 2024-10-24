@@ -84,7 +84,7 @@ fun RegisterScreen(
                 onClick = { launcher.launch("image/*") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Seleccionar Foto de Perfil")
+                Text("Seleccionar foto de perfil")
             }
 
             OutlinedTextField(
@@ -101,7 +101,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = height,
                 onValueChange = { if (it.all { char -> char.isDigit() || char == '.' }) height = it },
-                label = { Text("Altura (m)") },
+                label = { Text("Altura (cm)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
