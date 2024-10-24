@@ -1,12 +1,8 @@
 package com.sabdev.froggym.data.repository
 
 import com.sabdev.froggym.data.dao.RoutineDao
-import com.sabdev.froggym.data.entities.Routine
-import com.sabdev.froggym.data.entities.ExerciseType
-import com.sabdev.froggym.data.entities.RoutineExerciseCrossRef
-import com.sabdev.froggym.data.entities.RoutineWithExercises
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+import com.sabdev.froggym.data.entities.*
+import kotlinx.coroutines.flow.*
 
 class RoutineRepository(private val routineDao: RoutineDao) {
 
@@ -48,16 +44,16 @@ class RoutineRepository(private val routineDao: RoutineDao) {
             routineDao.getRoutinesByType(ExerciseType.CALISTHENICS).first().isEmpty()) {
 
             // Rutinas de gimnasio
-            val pplPush = insertRoutineWithExercises("PPL Push", ExerciseType.GYM, listOf(1L, 4L, 7L, 11L))
-            val pplPull = insertRoutineWithExercises("PPL Pull", ExerciseType.GYM, listOf(3L, 5L, 6L, 15L))
-            val pplLegs = insertRoutineWithExercises("PPL Legs", ExerciseType.GYM, listOf(2L, 8L, 9L, 13L, 14L))
+            val pplPush = insertRoutineWithExercises("PPL Empuje", ExerciseType.GYM, listOf(1L, 4L, 7L, 11L))
+            val pplPull = insertRoutineWithExercises("PPL Tirón", ExerciseType.GYM, listOf(3L, 5L, 6L, 15L))
+            val pplLegs = insertRoutineWithExercises("PPL Pierna", ExerciseType.GYM, listOf(2L, 8L, 9L, 13L, 14L))
 
-            val arnoldChestBack = insertRoutineWithExercises("Arnold Chest & Back", ExerciseType.GYM, listOf(1L, 5L, 11L, 3L))
-            val arnoldShoulderArms = insertRoutineWithExercises("Arnold Shoulders & Arms", ExerciseType.GYM, listOf(4L, 10L, 6L, 7L, 12L))
-            val arnoldLegs = insertRoutineWithExercises("Arnold Legs", ExerciseType.GYM, listOf(2L, 9L, 13L, 14L))
+            val arnoldChestBack = insertRoutineWithExercises("Arnold Split Pecho & Espalda", ExerciseType.GYM, listOf(1L, 5L, 11L, 3L))
+            val arnoldShoulderArms = insertRoutineWithExercises("Arnold Split Hombro & Armas", ExerciseType.GYM, listOf(4L, 10L, 6L, 7L, 12L))
+            val arnoldLegs = insertRoutineWithExercises("Arnold Split Pierna", ExerciseType.GYM, listOf(2L, 9L, 13L, 14L))
 
-            val heavyDutyUpper = insertRoutineWithExercises("Heavy Duty Upper Body", ExerciseType.GYM, listOf(1L, 4L, 5L, 6L, 7L))
-            val heavyDutyLower = insertRoutineWithExercises("Heavy Duty Lower Body", ExerciseType.GYM, listOf(2L, 3L, 9L, 13L, 14L))
+            val heavyDutyUpper = insertRoutineWithExercises("Heavy Duty Tren Superior", ExerciseType.GYM, listOf(1L, 4L, 5L, 6L, 7L))
+            val heavyDutyLower = insertRoutineWithExercises("Heavy Duty Tren Inferior", ExerciseType.GYM, listOf(2L, 3L, 9L, 13L, 14L))
 
             // Rutinas de calistenia
             val calistheniaBeginner = insertRoutineWithExercises("Calistenia Principiante", ExerciseType.CALISTHENICS, listOf(16L, 19L, 21L, 22L))
