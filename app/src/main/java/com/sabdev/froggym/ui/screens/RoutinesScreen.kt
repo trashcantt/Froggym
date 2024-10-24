@@ -20,10 +20,6 @@ fun RoutinesScreen(
     onRoutineSelected: (Long) -> Unit
 ) {
     var selectedType by remember { mutableStateOf(ExerciseType.GYM) }
-    var selectedTabIndex by remember { mutableStateOf(0) }
-    val gymTabs = listOf("Mis Rutinas", "PPL", "Arnold Split", "Heavy Duty")
-    val calistheniasTabs = listOf("Mis Rutinas", "Principiante", "Intermedio", "Avanzado")
-    val tabs = if (selectedType == ExerciseType.GYM) gymTabs else calistheniasTabs
     var isSelectionMode by remember { mutableStateOf(false) }
     var selectedRoutines by remember { mutableStateOf(setOf<Routine>()) }
 
@@ -34,23 +30,21 @@ fun RoutinesScreen(
             )
         },
         floatingActionButton = {
-            if (selectedTabIndex == 0) {
-                FloatingActionButton(
-                    onClick = {
-                        if (isSelectionMode) {
-                            viewModel.deleteRoutines(selectedRoutines.toList())
-                            isSelectionMode = false
-                            selectedRoutines = emptySet()
-                        } else {
-                            onCreateRoutine()
-                        }
+            FloatingActionButton(
+                onClick = {
+                    if (isSelectionMode) {
+                        viewModel.deleteRoutines(selectedRoutines.toList())
+                        isSelectionMode = false
+                        selectedRoutines = emptySet()
+                    } else {
+                        onCreateRoutine()
                     }
-                ) {
-                    Icon(
-                        imageVector = if (isSelectionMode) Icons.Default.Delete else Icons.Default.Add,
-                        contentDescription = if (isSelectionMode) "Eliminar rutinas seleccionadas" else "Crear rutina"
-                    )
                 }
+            ) {
+                Icon(
+                    imageVector = if (isSelectionMode) Icons.Default.Delete else Icons.Default.Add,
+                    contentDescription = if (isSelectionMode) "Eliminar rutinas seleccionadas" else "Crear rutina"
+                )
             }
         }
     ) { innerPadding ->
@@ -66,10 +60,7 @@ fun RoutinesScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = {
-                        selectedType = ExerciseType.GYM
-                        selectedTabIndex = 0
-                    },
+                    onClick = { selectedType = ExerciseType.GYM },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedType == ExerciseType.GYM) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                     ),
@@ -78,10 +69,7 @@ fun RoutinesScreen(
                     Text("Gimnasio")
                 }
                 Button(
-                    onClick = {
-                        selectedType = ExerciseType.CALISTHENICS
-                        selectedTabIndex = 0
-                    },
+                    onClick = { selectedType = ExerciseType.CALISTHENICS },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedType == ExerciseType.CALISTHENICS) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                     ),
@@ -90,27 +78,15 @@ fun RoutinesScreen(
                     Text("Calistenia")
                 }
             }
-            TabRow(selectedTabIndex = selectedTabIndex) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(title) }
-                    )
-                }
-            }
-            when {
-                selectedTabIndex == 0 -> UserRoutines(
-                    viewModel = viewModel,
-                    onRoutineSelected = onRoutineSelected,
-                    exerciseType = selectedType,
-                    isSelectionMode = isSelectionMode,
-                    selectedRoutines = selectedRoutines,
-                    onSelectionModeChanged = { isSelectionMode = it },
-                    onSelectedRoutinesChanged = { selectedRoutines = it }
-                )
-                else -> PredefinedRoutines(tabs[selectedTabIndex], onRoutineSelected, selectedType)
-            }
+            UserRoutines(
+                viewModel = viewModel,
+                onRoutineSelected = onRoutineSelected,
+                exerciseType = selectedType,
+                isSelectionMode = isSelectionMode,
+                selectedRoutines = selectedRoutines,
+                onSelectionModeChanged = { isSelectionMode = it },
+                onSelectedRoutinesChanged = { selectedRoutines = it }
+            )
         }
     }
 }
@@ -152,55 +128,6 @@ fun UserRoutines(
                 onSelectedRoutinesChanged(setOf(routine))
             }
         }
-    )
-}
-
-@Composable
-fun PredefinedRoutines(
-    level: String,
-    onRoutineSelected: (Long) -> Unit,
-    exerciseType: ExerciseType
-) {
-    val predefinedRoutines by remember {
-        derivedStateOf {
-            when (level) {
-                "PPL" -> listOf(
-                    Routine(id = 10001, name = "Push", type = exerciseType),
-                    Routine(id = 10002, name = "Pull", type = exerciseType),
-                    Routine(id = 10003, name = "Legs", type = exerciseType)
-                )
-                "Arnold Split" -> listOf(
-                    Routine(id = 10004, name = "Chest & Back", type = exerciseType),
-                    Routine(id = 10005, name = "Shoulders & Arms", type = exerciseType),
-                    Routine(id = 10006, name = "Legs", type = exerciseType)
-                )
-                "Heavy Duty" -> listOf(
-                    Routine(id = 10007, name = "Full Body", type = exerciseType)
-                )
-                "Principiante" -> listOf(
-                    Routine(id = 10008, name = "Rutina de fuerza para principiantes", type = exerciseType),
-                    Routine(id = 10009, name = "Rutina de cardio para principiantes", type = exerciseType)
-                )
-                "Intermedio" -> listOf(
-                    Routine(id = 10010, name = "Rutina de hipertrofia intermedia", type = exerciseType),
-                    Routine(id = 10011, name = "Rutina de resistencia intermedia", type = exerciseType)
-                )
-                "Avanzado" -> listOf(
-                    Routine(id = 10012, name = "Rutina de fuerza avanzada", type = exerciseType),
-                    Routine(id = 10013, name = "Rutina de skill avanzada", type = exerciseType)
-                )
-                else -> emptyList()
-            }
-        }
-    }
-
-    RoutineList(
-        routines = predefinedRoutines,
-        selectedRoutines = emptySet(),
-        isSelectionMode = false,
-        onRoutineSelected = onRoutineSelected,
-        onSelectionChanged = { _, _ -> },
-        onLongPress = { }
     )
 }
 
